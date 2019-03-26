@@ -1,9 +1,52 @@
 #!/bin/bash
 
+function excluir()
+{
+file=./agenda
+cmd=`grep -w ^$1 $file`
+if [ ! "$cmd" ] 
+then
+	echo Nao encontrado.
+else
+	aux=`grep -vw ^$1 $file`
+	> $file
+	for contato in $aux
+	do
+		echo $contato>>$file 
+	done
+	echo Usuario excluido.
+fi
+}
+
+function listarTodos()
+{
+clear
+i=6
+cat<menu_exibir
+for contato in $*
+	do	
+		nome=`echo $contato | awk -F : '{print $1}'`						
+		sobr=`echo $contato | awk -F : '{print $2}'`
+		email=`echo $contato | awk -F : '{print $3}'`
+		tel=`echo $contato | awk -F : '{print $4}'`						
+		tput cup $i 0 ;	
+		echo '|' $nome $sobr	
+		tput cup $i 32 ;
+		echo '|' $email	
+		tput cup $i 55 ;
+		echo '|' $tel
+		tput cup $i 72 ;
+		echo '|'
+		let i++			
+		done
+
+		echo ------------------------------------------------------------------------
+}
+
 function trataSaida()
 {
 tput cup 17 0 ;
-echo Deseja finalizar a agenda? S para sim e outra tecla para nao
+echo Deseja finalizar a agenda '?' S para sim e outra tecla para nao
 read fin
 if [ $fin = S ]
 then
@@ -59,11 +102,11 @@ then 	#sem parametros
 						tput cup 15 34 ;
 					
 
-						if [ ! -e "$file" ]; then #verifica se o arquivo não existe. Se não existir, cria o arquivo.
+						if [ ! -e "$file" ]; then #verifica se o arquivo não existe e cria 
 							touch agenda
 						fi 
-					
-						if test $confirm = 'S'
+						file=./agenda
+						if [ $confirm = 'S' ]
 						then
 							echo $nome:$sobrenome:$email:$telefone>>$file
 							echo Entrada salva com sucesso.
@@ -107,27 +150,12 @@ then 	#sem parametros
 					cat<menu_pesquisa
 					tput cup 4 34 ;
 					read nome
-				
-					file=./agenda
-					cmd=`grep -w ^$nome $file`
-					if [ ! "$cmd" ] 
-					then
-						tput cup 9 3 ;
-						echo Nao encontrado.
-						echo; echo; echo; echo; echo; echo;
-					else
-						aux=`grep -vw ^$nome $file`
-						> $file
-						for contato in $aux
-						do
-							echo $contato
-							echo $contato>>$file 
-						done
-						tput cup 9 3 ;
-						echo Usuario excluido.
-						sleep 2
-						echo; echo; echo; echo; echo; echo;
-					fi
+					tput cup 9 3 ;
+					excluir $nome
+					
+					sleep 1	
+					echo; echo; echo; echo; echo; echo;
+					
 					echo ;;
 				4) clear
 					cat<menu_pesquisa
@@ -226,33 +254,14 @@ then 	#sem parametros
 					fi
 					echo ;;
 				5) clear 
-					lista=`cat agenda | sort	` 
+					lista=`cat agenda | sort` 
 					if [ ! "$lista" ] 
 					then
 						tput cup 9 3 ;
 						echo Agenda vazia.
 						echo; echo; echo; echo; echo; echo;
 					else
-						i=6
-						cat<menu_exibir
-						for contato in $lista
-						do	
-							nome=`echo $contato | awk -F : '{print $1}'`						
-							sobr=`echo $contato | awk -F : '{print $2}'`
-							email=`echo $contato | awk -F : '{print $3}'`
-							tel=`echo $contato | awk -F : '{print $4}'`						
-							tput cup $i 0 ;	
-							echo '|' $nome $sobr	
-							tput cup $i 32 ;
-							echo '|' $email	
-							tput cup $i 55 ;
-							echo '|' $tel
-							tput cup $i 72 ;
-							echo '|'
-							let i++			
-						done
-
-						echo ------------------------------------------------------------------------
+						listarTodos $lista
 					fi
 					echo ;;
 				6) clear
@@ -266,6 +275,17 @@ then 	#sem parametros
 	done
 	
 else	#com parametros
-	echo CP
+	if [ $1 = "list" ]
+		then
+			lista=`cat agenda | sort` 
+					if [ ! "$lista" ] 
+					then
+						tput cup 9 3 ;
+						echo Agenda vazia.
+						echo; echo; echo; echo; echo; echo;
+					else
+						listarTodos $lista
+					fi
+	fi
 fi
 
