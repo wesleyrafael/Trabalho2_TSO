@@ -96,9 +96,10 @@ then 	#sem parametros
 						echo; echo; echo; echo; echo; echo;
 					else
 						aux=`grep -vw ^$nome $file`
-						touch agenda
-						for contato in $aux:
+						> $file
+						for contato in $aux
 						do
+							echo $contato
 							echo $contato>>$file 
 						done
 						tput cup 9 3 ;
@@ -136,9 +137,13 @@ then 	#sem parametros
 							email=`echo $cmd | awk -F : '{print $3}'`
 							tel=`echo $cmd | awk -F : '{print $4}'`
 							
-							aux=`grep -v $nome $file`
-							echo $aux>$file
-							echo $nome:$sobrenome:$email:$telefone>>$file	
+							aux=`grep -vw ^$nome $file`
+							> $file
+							for contato in $aux
+							do
+								echo $contato>>$file 
+							done
+							echo $novo_nome:$sobr:$email:$tel>>$file	
 							echo ;;
 						2) tput cup 13 34;
 							echo Novo sobrenome:
@@ -155,7 +160,7 @@ then 	#sem parametros
 					fi
 					echo ;;
 				5) clear 
-					lista=`cat agenda`
+					lista=`cat agenda | sort	` 
 					if [ ! "$lista" ] 
 					then
 						tput cup 9 3 ;
