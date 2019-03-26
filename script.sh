@@ -7,6 +7,7 @@ echo Deseja finalizar a agenda? S para sim e outra tecla para nao
 read fin
 if [ $fin = S ]
 then
+	clear
 	exit 0
 fi
 }
@@ -30,28 +31,48 @@ then 	#sem parametros
 					cat<menu_add
 					tput cup 10 34 ;
 					read nome
-					tput cup 11 34 ;
-					read sobrenome
-					tput cup 12 34 ;
-					read email
-					tput cup 13 34 ;
-					read telefone
-					tput cup 14 34 ;
-					read confirm
-					tput cup 15 34 ;
-					
 					file=./agenda
-					if [ ! -e "$file" ]; then #verifica se o arquivo não existe. Se não existir, cria o arquivo.
-					    touch agenda
-					fi 
-					
-					if test $confirm = 'S'
+
+					cadastrado=`grep -w ^$nome $file`
+					if [ $cadastrado ]
 					then
-						echo $nome:$sobrenome:$email:$telefone>>$file
-						echo Entrada salva com sucesso.
+						tput cup 5 3 ;
+						echo Usuario ja cadastrado. Deseja edita-lo? S-Sim,  Outra Tecla-Nao
+						tput cup 6 3 ;
+						read opt_cd
+						
+						if [ $opt_cd = 'S' ]
+						then #editar
+							echo oi
+						else
+							echo; echo; echo; echo; echo; echo; echo; echo; echo;
+						fi	
 					else
-						echo Entrada não foi salva.
-					fi	
+						tput cup 11 34 ;
+						read sobrenome
+						tput cup 12 34 ;
+						read email
+						tput cup 13 34 ;
+						read telefone
+						tput cup 14 34 ;
+						read confirm
+						tput cup 15 34 ;
+					
+
+						if [ ! -e "$file" ]; then #verifica se o arquivo não existe. Se não existir, cria o arquivo.
+							touch agenda
+						fi 
+					
+						if test $confirm = 'S'
+						then
+							echo $nome:$sobrenome:$email:$telefone>>$file
+							echo Entrada salva com sucesso.
+						else
+							echo Entrada não foi salva.
+						fi		
+					fi
+					
+					
 
 					sleep 1
 					echo ;;
@@ -145,14 +166,59 @@ then 	#sem parametros
 							done
 							echo $novo_nome:$sobr:$email:$tel>>$file	
 							echo ;;
-						2) tput cup 13 34;
+						2) tput cup 13 10;
 							echo Novo sobrenome:
+							tput cup 13 25;
+							read novo_sobr
+							if [ ! $novo_sobr ]
+							then
+								tput cup 14 10;
+								echo Sobrenome Invalido.
+							else
+								nome=`echo $cmd | awk -F : '{print $1}'`
+								email=`echo $cmd | awk -F : '{print $3}'`
+								tel=`echo $cmd | awk -F : '{print $4}'`
+							
+								aux=`grep -vw ^$nome $file`
+								> $file
+							for contato in $aux
+							do
+								echo $contato>>$file 
+							done
+							echo $nome:$novo_sobr:$email:$tel>>$file	
+							fi
 							echo ;;
-						3) tput cup 13 34;
+						3) tput cup 13 10;
 							echo Novo e-mail:
+							tput cup 13 22;
+							read novo_email
+							nome=`echo $cmd | awk -F : '{print $1}'`
+							sobr=`echo $cmd | awk -F : '{print $2}'`
+							tel=`echo $cmd | awk -F : '{print $4}'`
+							
+							aux=`grep -vw ^$nome $file`
+							> $file
+							for contato in $aux
+							do
+								echo $contato>>$file 
+							done
+							echo $nome:$sobrenome:$novo_email:$tel>>$file	
 							echo ;;
-						4) tput cup 13 34;
+						4) tput cup 13 10;
 							echo Novo telefone:
+							tput cup 13 24;
+							read novo_tel
+							nome=`echo $cmd | awk -F : '{print $1}'`
+							sobr=`echo $cmd | awk -F : '{print $2}'`
+							email=`echo $cmd | awk -F : '{print $3}'`
+							
+							aux=`grep -vw ^$nome $file`
+							> $file
+							for contato in $aux
+							do
+								echo $contato>>$file 
+							done
+							echo $nome:$sobrenome:$email:$novo_tel>>$file	
 							echo ;;
 						*) echo ;;
 						esac
@@ -195,7 +261,7 @@ then 	#sem parametros
 					echo Opcao invalida
 					sleep 1	;;
 			esac
-			echo Tecle Enter para continuar
+			echo Pressione Enter para continuar
 			read
 	done
 	
