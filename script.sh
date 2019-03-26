@@ -95,8 +95,12 @@ then 	#sem parametros
 						echo Nao encontrado.
 						echo; echo; echo; echo; echo; echo;
 					else
-						aux=`grep -v $nome $file`
-						echo $aux>$file #descobrir como colocar newline entre cada contato
+						aux=`grep -vw ^$nome $file`
+						touch agenda
+						for contato in $aux:
+						do
+							echo $contato>>$file 
+						done
 						tput cup 9 3 ;
 						echo Usuario excluido.
 						sleep 2
