@@ -96,7 +96,7 @@ then 	#sem parametros
 						echo; echo; echo; echo; echo; echo;
 					else
 						aux=`grep -v $nome $file`
-						echo $aux>$file #descobrir como colocar newline entre cada contato
+						echo $aux>$file
 						tput cup 9 3 ;
 						echo Usuario excluido.
 						sleep 2
