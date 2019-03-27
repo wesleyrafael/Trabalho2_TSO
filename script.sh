@@ -170,7 +170,16 @@ then 	#sem parametros
 								1) tput cup 13 10;
 									echo Novo nome:
 									tput cup 13 20;
-									read novo_nome
+
+									while
+										tput cup 13 20; echo; tput cup 13 20;
+										read novo_nome
+										[ -z $novo_nome ]
+									do
+										mostrarErro erro_edit "Nome não pode ser vazio."
+									done
+									limparErro erro_edit
+
 									tput cup 14 3;
 									excluir $file $nome > /dev/null
 									adicionar $file $novo_nome $sobr $email $tel > /dev/null
@@ -193,7 +202,16 @@ then 	#sem parametros
 								2) tput cup 13 10;
 									echo Novo sobrenome:
 									tput cup 13 25;
-									read novo_sobr
+
+									while
+										tput cup 13 25; echo; tput cup 13 25;
+										read novo_sobr
+										[ -z $novo_sobr ]
+									do
+										mostrarErro erro_edit "Sobrenome não pode ser vazio."
+									done
+									limparErro erro_edit
+
 									tput cup 14 3;	
 									editar $file $nome $novo_sobr $email $tel	
 									sleep 1;
@@ -204,7 +222,14 @@ then 	#sem parametros
 								3) tput cup 13 10;
 									echo Novo e-mail:
 									tput cup 13 22;
-									read novo_email
+									while
+										tput cup 13 22; echo; tput cup 13 22;
+										read novo_email
+										[ -z $novo_email ]
+									do
+										mostrarErro erro_edit "E-mail não pode ser vazio."
+									done
+									limparErro erro_edit
 									tput cup 14 3;
 									editar $file $nome $sobr $novo_email $tel
 									sleep 1;
@@ -215,7 +240,14 @@ then 	#sem parametros
 								4) tput cup 13 10;
 									echo Novo telefone:
 									tput cup 13 24;
-									read novo_tel
+									while
+										tput cup 13 24; echo; tput cup 13 24;
+										read novo_tel
+										[ -z $novo_tel ]
+									do
+										mostrarErro erro_edit "Telefone não pode ser vazio."
+									done
+									limparErro erro_edit
 									tput cup 14 3;
 									editar $file $nome $sobr $email $novo_tel
 									sleep 1;
@@ -225,7 +257,6 @@ then 	#sem parametros
 									echo; echo; echo; echo; echo; echo;;
 								*) echo; echo; echo;
 							esac
-							#echo; echo; echo; echo;
 							else
 								echo; echo; echo; echo; echo; echo; echo; echo; echo;
 							fi	
