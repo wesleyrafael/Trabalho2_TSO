@@ -81,6 +81,17 @@ function trataSaida()
 	fi
 }
 
+function comandoAjuda()
+{
+	echo "Uso do comando:
+Adicionar: ./script.sh add nome sobrenome email telefone
+Listar: ./script.sh list
+Remover: ./script.sh del nome
+Procurar: ./script.sh search nome
+Editar: ./script.sh edit nome sobrenome email telefone"
+exit -1
+}
+
 if test $# -eq 0 
 then 	#sem parametros
 	while true
@@ -356,28 +367,92 @@ then 	#sem parametros
 			read
 	done
 else	#com parametros
-#	if [ $1 = "list" ]
-#		then
-#			lista=`cat agenda | sort` 
-#					if [ ! "$lista" ] 
-#					then
-#						tput cup 9 3 ;
-#						echo Agenda vazia.
-#						echo; echo; echo; echo; echo; echo;
-#					else
-#						listarTodos $lista
-#					fi
-#	fi
-	while getopts "list help add: del: search: edit:" OPT; do
-	case "$OPT" in
-		"list") echo list;;
-		"add") echo list;;
-		"del") echo list;;
-		"search") echo list;;
-		"edit") echo list;;
-		"list") echo list;;
-		"?") echo help;;
+	file=./agenda
+	case $1 in
+		  "list") 
+				if [ $# -eq 1 ]
+				then
+					lista=`cat $file| sort` 
+					if [ ! "$lista" ] 
+					then
+						tput cup 9 3 ;
+						echo Agenda vazia.
+						echo; echo; echo; echo; echo; echo;
+					else
+						listarTodos $lista
+					fi
+				else
+					echo Comando Invalido
+					comandoAjuda
+				fi;;
+		   "add") 
+				if [ $# -eq 5 ]
+				then
+					adicionar $file $2 $3 $4 $5
+				else
+					echo Comando Invalido
+					comandoAjuda
+				fi				
+				;;
+		   "del") 
+				if [ $# -eq 2 ]
+				then
+					excluir $file $2
+				else
+					echo Comando Invalido
+					comandoAjuda
+				fi;;
+
+		"search")
+				if [ $# -eq 2 ]
+				then
+					cmd=`grep -wi ^$2 $file`
+					if [ ! "$cmd" ] 
+					then	
+						echo Nao encontrado.
+					else
+						sobr=`echo $cmd | awk -F : '{print $2}'`
+						email=`echo $cmd | awk -F : '{print $3}'`
+						tel=`echo $cmd | awk -F : '{print $4}'`
+						echo Dados de $2
+						echo Nome: $2
+						echo Sobrenome: $sobr
+						echo Email: $email
+						echo Telefone: $tel
+					fi
+				else
+					echo Comando Invalido
+					comandoAjuda
+				fi;;	
+		  "edit") 
+				if [ $# -ge 2 ] && [ $# -le 5 ] 
+				then
+					cmd=`grep -wi ^$2 $file`
+					if [ ! "$cmd" ] 
+					then	
+						echo Nao encontrado.
+					else
+						editar $file $2 $3 $4 $5
+					fi
+				else
+					echo Comando Invalido
+					comandoAjuda
+				fi;;
+		  "help") 
+				comandoAjuda;;
+		       *) 
+				echo Comando Invalido; comandoAjuda;;
 	esac
-	done
+#	while getopts "lha:d:s:e:" OPT; do
+#		case "$OPT" in
+#			"l") echo list;;
+#			"a") echo add;;
+#			"d") echo del;;
+#			"s") echo search;;
+#			"e") echo edit;;
+#			"h") echo 'help';;
+#			"?") echo -1;;
+#		esac
+#	done
 fi
 
