@@ -103,13 +103,13 @@ function limparErro()
 function comandoAjuda()
 {
 	echo "Uso do comando:
-Adicionar: ./script.sh add nome sobrenome email telefone
-Listar: ./script.sh list
-Remover: ./script.sh del nome
-Procurar: ./script.sh search nome
-Editar: ./script.sh edit nome sobrenome email telefone"
+Adicionar: ./script.sh -a nome sobrenome email telefone
+Listar: ./script.sh -l
+Remover: ./script.sh -d nome
+Procurar: ./script.sh -s nome
+Editar: ./script.sh -e nome sobrenome email telefone"
 exit -1
-}
+} 
 
 if test $# -eq 0 
 then 	#sem parametros
@@ -479,10 +479,15 @@ then 	#sem parametros
 	done
 else	#com parametros
 	file=./agenda
-	case $1 in
-		  "list") 
-				if [ $# -eq 1 ]
-				then
+
+	if [ $1 != "-l" ] && [ $1 != "-a" ] && [ $1 != "-d" ] && [ $1 != "-s" ] && [ $1 != "-e" ] && [ $1 != "-h" ]
+	then
+		comandoAjuda
+	else
+		while getopts "lha:d:s:e:" opt_in 
+	do
+		case $opt_in in
+			  "l") 
 					lista=`cat $file| sort` 
 					if [ ! "$lista" ] 
 					then
@@ -491,68 +496,69 @@ else	#com parametros
 						echo; echo; echo; echo; echo; echo;
 					else
 						listarTodos $lista
-					fi
-				else
-					echo Comando Invalido
-					comandoAjuda
-				fi;;
-		   "add") 
-				if [ $# -eq 5 ]
-				then
-					adicionar $file $2 $3 $4 $5
-				else
-					echo Comando Invalido
-					comandoAjuda
-				fi				
-				;;
-		   "del") 
-				if [ $# -eq 2 ]
-				then
-					excluir $file $2
-				else
-					echo Comando Invalido
-					comandoAjuda
-				fi;;
+					
+					fi;;
+			   "a") 
+					if [ $# -eq 5 ]
+					then
+						adicionar $file $2 $3 $4 $5
+					else
+						echo Comando Invalido
+						comandoAjuda
+					fi				
+					;;
+			   "d") 
+					if [ $# -eq 2 ]
+					then
+						excluir $file $2
+					else
+						echo Comando Invalido
+						comandoAjuda
+					fi;;
 
-		"search")
-				if [ $# -eq 2 ]
-				then
-					cmd=`grep -wi ^$2 $file`
-					if [ ! "$cmd" ] 
-					then	
-						echo Nao encontrado.
+			   "s")
+					if [ $# -eq 2 ]
+					then
+						cmd=`grep -wi ^$2 $file`
+						if [ ! "$cmd" ] 
+						then	
+							echo Nao encontrado.
+						else
+							sobr=`echo $cmd | awk -F : '{print $2}'`
+							email=`echo $cmd | awk -F : '{print $3}'`
+							tel=`echo $cmd | awk -F : '{print $4}'`
+							echo Dados de $2
+							echo Nome: $2
+							echo Sobrenome: $sobr
+							echo Email: $email
+							echo Telefone: $tel
+						fi
 					else
-						sobr=`echo $cmd | awk -F : '{print $2}'`
-						email=`echo $cmd | awk -F : '{print $3}'`
-						tel=`echo $cmd | awk -F : '{print $4}'`
-						echo Dados de $2
-						echo Nome: $2
-						echo Sobrenome: $sobr
-						echo Email: $email
-						echo Telefone: $tel
-					fi
-				else
-					echo Comando Invalido
-					comandoAjuda
-				fi;;	
-		  "edit") 
-				if [ $# -eq 5 ]
-				then
-					cmd=`grep -wi ^$2 $file`
-					if [ ! "$cmd" ] 
-					then	
-						echo Nao encontrado.
+						echo Comando Invalido
+						comandoAjuda
+					fi;;	
+			  "e") 
+					if [ $# -eq 5 ]
+					then
+						cmd=`grep -wi ^$2 $file`
+						if [ ! "$cmd" ] 
+						then	
+							echo Nao encontrado.
+						else
+							editar $file $2 $3 $4 $5
+						fi
 					else
-						editar $file $2 $3 $4 $5
-					fi
-				else
-					echo Comando Invalido
-					comandoAjuda
-				fi;;
-		  "help") 
-				comandoAjuda;;
-		       *) 
-				echo Comando Invalido; comandoAjuda;;
-	esac
+						echo Comando Invalido
+						comandoAjuda
+					fi;;
+			  "h") 
+					comandoAjuda;;
+			  "?") 
+					echo comandoAjuda;;
+				*)
+					echo comandoajuda;;
+		esac
+	done
+	fi
 fi
 
