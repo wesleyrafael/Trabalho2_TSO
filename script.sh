@@ -1,5 +1,5 @@
 #!/bin/bash
-
+			
 function adicionar(){
 	if [ ! -e "$1" ]; then #verifica se o arquivo não existe e cria 
 		touch agenda
@@ -155,7 +155,7 @@ then 	#sem parametros
 							echo $nome
 							tput cup 12 34 ;
 							read opt_ed
-							
+							nome=`echo $cmd | awk -F : '{print $1}'`
 							sobr=`echo $cmd | awk -F : '{print $2}'`
 							email=`echo $cmd | awk -F : '{print $3}'`
 							tel=`echo $cmd | awk -F : '{print $4}'`
@@ -293,6 +293,7 @@ then 	#sem parametros
 						if [ $confirm = 'S' ] || [ $confirm = 's' ]
 						then
 							adicionar $file $nome $sobrenome $email $telefone
+							echo Entrada salva.
 						else
 							echo Entrada não foi salva.
 						fi								
@@ -312,6 +313,7 @@ then 	#sem parametros
 						echo Nao encontrado.
 						echo; echo; echo; echo; echo; echo;
 					else
+						nome=`echo $cmd | awk -F : '{print $1}'`
 						sobr=`echo $cmd | awk -F : '{print $2}'`
 						email=`echo $cmd | awk -F : '{print $3}'`
 						tel=`echo $cmd | awk -F : '{print $4}'`
@@ -357,7 +359,7 @@ then 	#sem parametros
 						echo $nome
 						tput cup 12 34 ;
 						read opt_ed
-						
+						nome=`echo $cmd | awk -F : '{print $1}'`
 						sobr=`echo $cmd | awk -F : '{print $2}'`
 						email=`echo $cmd | awk -F : '{print $3}'`
 						tel=`echo $cmd | awk -F : '{print $4}'`
