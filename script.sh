@@ -1,18 +1,29 @@
 #!/bin/bash
 			
-function adicionar(){
+adicionar(){
 	if [ ! -e "$1" ]; then #verifica se o arquivo não existe e cria 
 		touch agenda
 	fi 
 	
 	echo $2:$3:$4:$5>>$1
-	echo Contato cadastrado.
+	echo Contato salvo.
 }
 
-function excluir()
+existe()
 {
 	cmd=`grep -wi ^$2 $1`
-	if [ ! "$cmd" ] 
+	if [ "$cmd" ] 
+	then
+		nomeExiste="S"
+	else
+		nomeExiste="N"
+	fi
+}
+
+excluir()
+{
+	existe $1 $2
+	if [ "$nomeExiste" = "N" ] 
 	then
 		echo Nao encontrado.
 	else
@@ -26,13 +37,13 @@ function excluir()
 	fi
 }
 
-function editar(){ #$1 = arquivo, $2 = nome, $3 = sobrenome, $4 = email, $5 = telefone
+editar(){ #$1 = arquivo, $2 = nome, $3 = sobrenome, $4 = email, $5 = telefone
 	excluir $1 $2 > /dev/null
 	adicionar $1 $2 $3 $4 $5 > /dev/null
 	echo Contato editado.
 }
 
-function listarTodos()
+listarTodos()
 {
 	i=6
 	cat<menu_exibir
@@ -52,55 +63,55 @@ function listarTodos()
 			echo ------------------------------------------------------------------------
 }
 
-function mostrarEntrada()
+mostrarEntrada()
 {
-	tput cup 6 3 ;
+	tput cup 6 3 
 	echo Nome: $1
-	tput cup 7 3 ;
+	tput cup 7 3 
 	echo Sobrenome: $2
-	tput cup 8 3 ;
+	tput cup 8 3 
 	echo Email: $3
-	tput cup 9 3 ;
+	tput cup 9 3 
 	echo Telefone: $4
 }
 
-function trataSaida()
+trataSaida()
 {
-	tput cup 17 0 ;
+	tput cup 17 0 
 	echo Deseja finalizar a agenda'?' S para sim e outra tecla para nao
 	read fin
-	if [ $fin = S ] || [ $fin = s ]
+	if [ "$fin" = "S" ] || [ "$fin" = "s" ]
 	then
 		clear
 		exit 0
 	fi
 }
 
-function mostrarErro()
+mostrarErro()
 {	
-	if [ $1 = "erro_add" ]
+	if [ "$1" = "erro_add" ]
 	then
 		tput cup 5 3
-	elif [ $1 = "erro_edit" ]
+	elif [ "$1" = "erro_edit" ]
 	then
 		tput cup 11 20
 	fi
 	echo $2
 }
 
-function limparErro()
+limparErro()
 {
-	if [ $1 = "erro_add" ]
+	if [ "$1" = "erro_add" ]
 	then
 		tput cup 5 3
-	elif [ $1 = "erro_edit" ]
+	elif [ "$1" = "erro_edit" ]
 	then
 		tput cup 11 20
 	fi
 	echo "                              "
 }
 
-function comandoAjuda()
+comandoAjuda()
 {
 	echo "Uso do comando:
 Adicionar: ./script.sh -a nome sobrenome email telefone
@@ -111,7 +122,7 @@ Editar: ./script.sh -e nome sobrenome email telefone"
 exit -1
 } 
 
-if test $# -eq 0 
+if test "$#" -eq 0 
 then 	#sem parametros
 	while true
 		
@@ -126,126 +137,140 @@ then 	#sem parametros
 			:
 		done
 			file=./agenda
-			case $opt in 
+			case "$opt" in 
 				1) clear
 					cat<menu_add
 
 					while
-						tput cup 10 34 ; echo; tput cup 10 34 ;
+						tput cup 10 34
+						echo ""
+						tput cup 10 34 
 						read nome
-						[ -z $nome ]
+						[ -z "$nome" ]
 					do
 						mostrarErro erro_add "Nome não pode ser vazio."
 					done
 						limparErro erro_add
 
-					cmd=`grep -wi ^$nome $file`
-					if [ $cmd ]
+					existe $file $nome
+					if [ "$nomeExiste" = "S" ]
 					then
-						tput cup 5 3 ;
+						tput cup 5 3 
 						echo Contato ja cadastrado. Deseja edita-lo? S-Sim,  Outra Tecla-Nao
-						tput cup 6 3 ;
+						tput cup 6 3 
 						read opt_cd
 						
-						if [ $opt_cd = 'S' ] || [ $opt_cd = 's' ]
+						if [ "$opt_cd" = "S" ] || [ $opt_cd = "s" ]
 						then 
 							clear
 							cat<menu_editar
-							tput cup 4 34 ;
+							tput cup 4 34 
 							echo $nome
-							tput cup 12 34 ;
+							tput cup 12 34 
 							read opt_ed
 							nome=`echo $cmd | awk -F : '{print $1}'`
 							sobr=`echo $cmd | awk -F : '{print $2}'`
 							email=`echo $cmd | awk -F : '{print $3}'`
 							tel=`echo $cmd | awk -F : '{print $4}'`
 							
-							
-							case $opt_ed in
-								1) tput cup 13 10;
+							case "$opt_ed" in
+								1) tput cup 13 10
 									echo Novo nome:
-									tput cup 13 20;
-
-									while
-										tput cup 13 20; echo; tput cup 13 20;
-										read novo_nome
-										[ -z $novo_nome ]
+									while true
 									do
-										mostrarErro erro_edit "Nome não pode ser vazio."
+										tput cup 13 20
+										echo "                                          "
+										tput cup 13 20
+										read novo_nome
+										existe $file $novo_nome
+
+										if [ -z "$novo_nome"  ]
+										then
+											mostrarErro erro_edit "Nome não pode ser vazio."
+											continue
+										elif [ "$nomeExiste" == "S" ]
+										then
+											mostrarErro erro_edit "Nome ja cadastrado.     "
+										else
+											break
+										fi
 									done
 									limparErro erro_edit
 
-									tput cup 14 3;
+									tput cup 14 3
 									excluir $file $nome > /dev/null
 									adicionar $file $novo_nome $sobr $email $tel > /dev/null
 									echo Contato editado.
 									sleep 1
 									clear
 									cat<menu_pesquisa
-									tput cup 6 3 ;
+									tput cup 6 3 
 									echo Nome: $novo_nome
-									tput cup 7 3 ;
+									tput cup 7 3 
 									echo Sobrenome: $sobr
-									tput cup 8 3 ;
+									tput cup 8 3 
 									echo Email: $email
-									tput cup 9 3 ;
+									tput cup 9 3 
 									echo Telefone: $tel
 									clear
 									cat<menu_pesquisa
 									mostrarEntrada $novo_nome $sobr $email $tel
 									echo; echo; echo; echo; echo; echo;;
-								2) tput cup 13 10;
+								2) tput cup 13 10
 									echo Novo sobrenome:
-									tput cup 13 25;
-
 									while
-										tput cup 13 25; echo; tput cup 13 25;
+										tput cup 13 25
+										echo "                                          "
+										tput cup 13 25
 										read novo_sobr
-										[ -z $novo_sobr ]
+										[ -z "$novo_sobr" ]
 									do
 										mostrarErro erro_edit "Sobrenome não pode ser vazio."
 									done
 									limparErro erro_edit
 
-									tput cup 14 3;	
+									tput cup 14 3
 									editar $file $nome $novo_sobr $email $tel	
-									sleep 1;
+									sleep 1
 									clear
 									cat<menu_pesquisa
 									mostrarEntrada $nome $novo_sobr $email $tel
 									echo; echo; echo; echo; echo; echo;;
-								3) tput cup 13 10;
+								3) tput cup 13 10
 									echo Novo e-mail:
-									tput cup 13 22;
+									tput cup 13 22
 									while
-										tput cup 13 22; echo; tput cup 13 22;
+										tput cup 13 22
+										echo "                                          "
+										tput cup 13 22;
 										read novo_email
-										[ -z $novo_email ]
+										[ -z "$novo_email" ]
 									do
 										mostrarErro erro_edit "E-mail não pode ser vazio."
 									done
 									limparErro erro_edit
-									tput cup 14 3;
+									tput cup 14 3
 									editar $file $nome $sobr $novo_email $tel
-									sleep 1;
+									sleep 1
 									clear
 									cat<menu_pesquisa
 									mostrarEntrada $nome $sobr $novo_email $tel
 									echo; echo; echo; echo; echo; echo;;
 								4) tput cup 13 10;
 									echo Novo telefone:
-									tput cup 13 24;
 									while
-										tput cup 13 24; echo; tput cup 13 24;
+										tput cup 13 24
+										echo "                                          "
+										tput cup 13 24
 										read novo_tel
-										[ -z $novo_tel ]
+										[ -z "$novo_tel" ]
 									do
 										mostrarErro erro_edit "Telefone não pode ser vazio."
 									done
 									limparErro erro_edit
-									tput cup 14 3;
+									tput cup 14 3
 									editar $file $nome $sobr $email $novo_tel
-									sleep 1;
+									sleep 1
 									clear
 									cat<menu_pesquisa
 									mostrarEntrada $nome $sobr $email $novo_tel
@@ -259,7 +284,7 @@ then 	#sem parametros
 						while
 							tput cup 11 34; echo; tput cup 11 34;
 							read sobrenome
-							[ -z $sobrenome ]
+							[ -z "$sobrenome" ]
 						do
 							mostrarErro erro_add "Sobrenome não pode ser vazio."
 						done
@@ -268,7 +293,7 @@ then 	#sem parametros
 						while
 							tput cup 12 34 ; echo; tput cup 12 34 ;
 							read email
-							[ -z $email ]
+							[ -z "$email" ]
 						do
 							mostrarErro erro_add "E-mail não pode ser vazio."
 						done
@@ -278,7 +303,7 @@ then 	#sem parametros
 						while
 							tput cup 13 34 ; echo; tput cup 13 34 ;
 							read telefone
-							[ -z $telefone ] 
+							[ -z "$telefone" ] 
 						do
 							mostrarErro erro_add "Telefone não pode ser vazio."
 						done
@@ -290,12 +315,11 @@ then 	#sem parametros
 						read confirm
 						tput cup 15 3 ;
 						
-						if [ $confirm = 'S' ] || [ $confirm = 's' ]
+						if [ "$confirm" = "S" ] || [ "$confirm" = "s" ]
 						then
 							adicionar $file $nome $sobrenome $email $telefone
-							echo Entrada salva.
 						else
-							echo Entrada não foi salva.
+							echo Contato não foi salvo.
 						fi								
 					fi
 
@@ -303,13 +327,13 @@ then 	#sem parametros
 					echo ;;
 				2) clear
 					cat<menu_pesquisa
-					tput cup 4 34 ;
+					tput cup 4 34 
 					read nome
 				
 					cmd=`grep -wi ^$nome $file`
 					if [ ! "$cmd" ] 
 					then	
-						tput cup 9 3 ;
+						tput cup 9 3 
 						echo Nao encontrado.
 						echo; echo; echo; echo; echo; echo;
 					else
@@ -317,24 +341,24 @@ then 	#sem parametros
 						sobr=`echo $cmd | awk -F : '{print $2}'`
 						email=`echo $cmd | awk -F : '{print $3}'`
 						tel=`echo $cmd | awk -F : '{print $4}'`
-						tput cup 6 3 ;
+						tput cup 6 3 
 						echo Nome: $nome
-						tput cup 7 3 ;
+						tput cup 7 3 
 						echo Sobrenome: $sobr
-						tput cup 8 3 ;
+						tput cup 8 3 
 						echo Email: $email
-						tput cup 9 3 ;
+						tput cup 9 3 
 						echo Telefone: $tel
 						echo; echo; echo; echo; echo; echo;
 					fi
 					echo ;;
 				3) clear
 					cat<menu_pesquisa
-					tput cup 4 34 ;
+					tput cup 4 34 
 					read nome
-					tput cup 2 32 ;
+					tput cup 2 32 
 					echo Remover'  '
-					tput cup 9 3 ;
+					tput cup 9 3 
 					excluir $file $nome
 					
 					sleep 1	
@@ -343,113 +367,125 @@ then 	#sem parametros
 					echo ;;
 				4) clear
 					cat<menu_pesquisa
-					tput cup 4 34 ;
+					tput cup 4 34 
 					read nome
 				
 					cmd=`grep -wi ^$nome $file`
 					if [ ! "$cmd" ] 
 					then
-						tput cup 9 3 ;
+						tput cup 9 3 
 						echo Nao encontrado.
 						echo; echo; echo; echo; echo; echo;
 					else	
 						clear
 						cat<menu_editar
-						tput cup 4 34 ;
+						tput cup 4 34 
 						echo $nome
-						tput cup 12 34 ;
+						tput cup 12 34 
 						read opt_ed
 						nome=`echo $cmd | awk -F : '{print $1}'`
 						sobr=`echo $cmd | awk -F : '{print $2}'`
 						email=`echo $cmd | awk -F : '{print $3}'`
 						tel=`echo $cmd | awk -F : '{print $4}'`
 						
-						
-						case $opt_ed in
-							1) tput cup 13 10;
+						case "$opt_ed" in
+							1) tput cup 13 10
 								echo Novo nome:
-								tput cup 13 20;
-
-								while
-									tput cup 13 20; echo; tput cup 13 20;
-									read novo_nome
-									[ -z $novo_nome ]
+								while true
 								do
-									mostrarErro erro_edit "Nome não pode ser vazio."
+									tput cup 13 20
+									echo "                                          "
+									tput cup 13 20
+									read novo_nome
+									existe $file $novo_nome
+
+									if [ -z "$novo_nome"  ]
+									then
+										mostrarErro erro_edit "Nome não pode ser vazio."
+										continue
+									elif [ "$nomeExiste" == "S" ]
+									then
+										mostrarErro erro_edit "Nome ja cadastrado.     "
+									else
+										break
+									fi
 								done
 								limparErro erro_edit
 
-								tput cup 14 3;
+								tput cup 14 3
 								excluir $file $nome > /dev/null
 								adicionar $file $novo_nome $sobr $email $tel > /dev/null
 								echo Contato editado.
 								sleep 1
 								clear
 								cat<menu_pesquisa
-								tput cup 6 3 ;
+								tput cup 6 3 
 								echo Nome: $novo_nome
-								tput cup 7 3 ;
+								tput cup 7 3 
 								echo Sobrenome: $sobr
-								tput cup 8 3 ;
+								tput cup 8 3 
 								echo Email: $email
-								tput cup 9 3 ;
+								tput cup 9 3 
 								echo Telefone: $tel
 								clear
 								cat<menu_pesquisa
 								mostrarEntrada $novo_nome $sobr $email $tel
 								echo; echo; echo; echo; echo; echo;;
-							2) tput cup 13 10;
+							2) tput cup 13 10
 								echo Novo sobrenome:
-								tput cup 13 25;
-
 								while
-									tput cup 13 25; echo; tput cup 13 25;
+									tput cup 13 25
+									echo "                                          "
+									tput cup 13 25
 									read novo_sobr
-									[ -z $novo_sobr ]
+									[ -z "$novo_sobr" ]
 								do
 									mostrarErro erro_edit "Sobrenome não pode ser vazio."
 								done
 								limparErro erro_edit
 
-								tput cup 14 3;	
+								tput cup 14 3
 								editar $file $nome $novo_sobr $email $tel	
-								sleep 1;
+								sleep 1
 								clear
 								cat<menu_pesquisa
 								mostrarEntrada $nome $novo_sobr $email $tel
 								echo; echo; echo; echo; echo; echo;;
-							3) tput cup 13 10;
+							3) tput cup 13 10
 								echo Novo e-mail:
-								tput cup 13 22;
+								tput cup 13 22
 								while
-									tput cup 13 22; echo; tput cup 13 22;
+									tput cup 13 22
+									echo "                                          "
+									tput cup 13 22;
 									read novo_email
-									[ -z $novo_email ]
+									[ -z "$novo_email" ]
 								do
 									mostrarErro erro_edit "E-mail não pode ser vazio."
 								done
 								limparErro erro_edit
-								tput cup 14 3;
+								tput cup 14 3
 								editar $file $nome $sobr $novo_email $tel
-								sleep 1;
+								sleep 1
 								clear
 								cat<menu_pesquisa
 								mostrarEntrada $nome $sobr $novo_email $tel
 								echo; echo; echo; echo; echo; echo;;
 							4) tput cup 13 10;
 								echo Novo telefone:
-								tput cup 13 24;
 								while
-									tput cup 13 24; echo; tput cup 13 24;
+									tput cup 13 24
+									echo "                                          "
+									tput cup 13 24
 									read novo_tel
-									[ -z $novo_tel ]
+									[ -z "$novo_tel" ]
 								do
 									mostrarErro erro_edit "Telefone não pode ser vazio."
 								done
 								limparErro erro_edit
-								tput cup 14 3;
+								tput cup 14 3
 								editar $file $nome $sobr $email $novo_tel
-								sleep 1;
+								sleep 1
 								clear
 								cat<menu_pesquisa
 								mostrarEntrada $nome $sobr $email $novo_tel
@@ -462,7 +498,7 @@ then 	#sem parametros
 					lista=`cat $file | sort` 
 					if [ ! "$lista" ] 
 					then
-						tput cup 9 3 ;
+						tput cup 9 3 
 						echo Agenda vazia.
 						echo; echo; echo; echo; echo; echo;
 					else
@@ -482,35 +518,40 @@ then 	#sem parametros
 else	#com parametros
 	file=./agenda
 
-	if [ $1 != "-l" ] && [ $1 != "-a" ] && [ $1 != "-d" ] && [ $1 != "-s" ] && [ $1 != "-e" ] && [ $1 != "-h" ]
+	if [ "$1" != "-l" ] && [ "$1" != "-a" ] && [ "$1" != "-d" ] && [ "$1" != "-s" ] && [ "$1" != "-e" ] && [ "$1" != "-h" ]
 	then
+		echo Comando Invalido.
 		comandoAjuda
 	else
 		while getopts "lha:d:s:e:" opt_in 
 	do
-		case $opt_in in
+		case "$opt_in" in
 			  "l") 
 					lista=`cat $file| sort` 
 					if [ ! "$lista" ] 
 					then
-						tput cup 9 3 ;
 						echo Agenda vazia.
-						echo; echo; echo; echo; echo; echo;
 					else
 						listarTodos $lista
 					
 					fi;;
 			   "a") 
-					if [ $# -eq 5 ]
+					if [ "$#" -eq 5 ]
 					then
-						adicionar $file $2 $3 $4 $5
+						existe $file $2
+						if [ "$nomeExiste" = 'N' ]
+						then
+							adicionar $file $2 $3 $4 $5
+						else
+							echo Usuario com o nome fornecido ja existe.
+						fi
 					else
 						echo Comando Invalido
 						comandoAjuda
 					fi				
 					;;
 			   "d") 
-					if [ $# -eq 2 ]
+					if [ "$#" -eq 2 ]
 					then
 						excluir $file $2
 					else
@@ -519,7 +560,7 @@ else	#com parametros
 					fi;;
 
 			   "s")
-					if [ $# -eq 2 ]
+					if [ "$#" -eq 2 ]
 					then
 						cmd=`grep -wi ^$2 $file`
 						if [ ! "$cmd" ] 
@@ -540,12 +581,18 @@ else	#com parametros
 						comandoAjuda
 					fi;;	
 			  "e") 
-					if [ $# -eq 5 ]
+					if [ "$#" -eq 5 ]
 					then
-						cmd=`grep -wi ^$2 $file`
-						if [ ! "$cmd" ] 
+						existe $file $2
+						if [ "$nomeExiste" = "N" ]
 						then	
 							echo Nao encontrado.
+							echo Deseja inserir um novo registro com os dados fornecidos? S-Sim, Outra Tecla-Nao	
+							read opt_inserir
+							if [ "$opt_inserir" = "S" ] || [ "$opt_inserir" = "s" ]
+							then
+								adicionar $file $2 $3 $4 $5
+							fi
 						else
 							editar $file $2 $3 $4 $5
 						fi
@@ -556,9 +603,7 @@ else	#com parametros
 			  "h") 
 					comandoAjuda;;
 			  "?") 
-					echo comandoAjuda;;
-				*)
-					echo comandoajuda;;
+					comandoAjuda;;
 		esac
 	done
 	fi
