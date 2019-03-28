@@ -34,7 +34,6 @@ function editar(){ #$1 = arquivo, $2 = nome, $3 = sobrenome, $4 = email, $5 = te
 
 function listarTodos()
 {
-	clear
 	i=6
 	cat<menu_exibir
 	for contato in $*
@@ -43,16 +42,12 @@ function listarTodos()
 			sobr=`echo $contato | awk -F : '{print $2}'`
 			email=`echo $contato | awk -F : '{print $3}'`
 			tel=`echo $contato | awk -F : '{print $4}'`						
-			tput cup $i 0 ;	
-			echo '|' $nome $sobr	
-			tput cup $i 32 ;
-			echo '|' $email	
-			tput cup $i 55 ;
-			echo '|' $tel
-			tput cup $i 72 ;
-			echo '|'
+			echo  Nome e Sobrenome: $nome $sobr	
+			echo  Email: $email	
+			echo  Telefone $tel
+			echo
 			let i++			
-			done
+		done
 
 			echo ------------------------------------------------------------------------
 }
@@ -310,7 +305,6 @@ then 	#sem parametros
 					tput cup 4 34 ;
 					read nome
 				
-					#file=./agenda
 					cmd=`grep -wi ^$nome $file`
 					if [ ! "$cmd" ] 
 					then	
@@ -336,6 +330,8 @@ then 	#sem parametros
 					cat<menu_pesquisa
 					tput cup 4 34 ;
 					read nome
+					tput cup 2 32 ;
+					echo Remover'  '
 					tput cup 9 3 ;
 					excluir $file $nome
 					
@@ -468,6 +464,7 @@ then 	#sem parametros
 						echo Agenda vazia.
 						echo; echo; echo; echo; echo; echo;
 					else
+						clear
 						listarTodos $lista
 					fi
 					echo ;;
@@ -539,7 +536,7 @@ else	#com parametros
 					comandoAjuda
 				fi;;	
 		  "edit") 
-				if [ $# -ge 2 ] && [ $# -le 5 ] 
+				if [ $# -eq 5 ]
 				then
 					cmd=`grep -wi ^$2 $file`
 					if [ ! "$cmd" ] 
@@ -557,16 +554,5 @@ else	#com parametros
 		       *) 
 				echo Comando Invalido; comandoAjuda;;
 	esac
-#	while getopts "lha:d:s:e:" OPT; do
-#		case "$OPT" in
-#			"l") echo list;;
-#			"a") echo add;;
-#			"d") echo del;;
-#			"s") echo search;;
-#			"e") echo edit;;
-#			"h") echo 'help';;
-#			"?") echo -1;;
-#		esac
-#	done
 fi
 
