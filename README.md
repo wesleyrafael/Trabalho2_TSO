@@ -19,11 +19,11 @@ O script deve tratar o sinal Control+C e perguntar ao usuário se deseja finaliz
 
 No modo não interativo, o usuário deve especificar os parâmetros na linha de comando.
 Formas de uso: 
- - script.sh add nome sobrenome email telefone
- - script.sh list
- - script.sh del nome
- - script search nome
- - script edit nome sobrenome email telefone(caso o nome nao exista, deve dar a opção de inserir um novo registro)
+ - Adicionar: script.sh -a nome sobrenome email telefone
+ - Listar: script.sh -l
+ - Remover: script.sh -d nome
+ - Pesquisar: script -s nome
+ - Editar: script -e nome sobrenome email telefone(caso o nome nao exista, deve dar a opção de inserir um novo registro)
 
 Deve possuir o parâmetro help para exibir a sintaxe do comando:
   script help
